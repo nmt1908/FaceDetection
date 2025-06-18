@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <!-- Header with back arrow and title -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:background="?attr/colorPrimary"
+        app:title="Cài đặt"
+        android:backgroundTint="@color/orangeLogo"
+        app:titleTextColor="@android:color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:navigationIcon="@drawable/baseline_arrow_back_24" />
+
+    <!-- Face Area Threshold Section -->
+    <TextView
+        android:id="@+id/tvFaceAreaLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ngưỡng diện tích mặt"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="24dp"/>
+
+    <LinearLayout
+        android:id="@+id/layoutFaceAreaDetectionThreshold"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toBottomOf="@id/tvFaceAreaLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/btnDecreaseFaceAreaDetectionThreshold"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:text="-"
+            android:backgroundTint="@color/orangeLogo"
+            android:textSize="22dp"/>
+
+
+        <TextView
+            android:id="@+id/tvFaceAreaDetectionThresholdValue"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="12500"
+            android:textSize="24sp"
+            android:gravity="center"
+            android:layout_marginHorizontal="16dp"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/btnIncreaseFaceAreaDetectionThreshold"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+
+            android:backgroundTint="@color/orangeLogo"
+            android:text="+"
+            android:textSize="22dp"/>
+    </LinearLayout>
+
+    <!-- Face Angle Threshold Section -->
+    <TextView
+        android:id="@+id/tvFaceRecognitionThresholdArea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ngưỡng diện tích mặt nhận diện"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/layoutFaceAreaDetectionThreshold"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="32dp"/>
+
+    <LinearLayout
+        android:id="@+id/layoutFaceRecognitionThresholdArea"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toBottomOf="@id/tvFaceRecognitionThresholdArea"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/btnDecreaseFaceRecognitionThresholdArea"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:text="-"
+            android:backgroundTint="@color/orangeLogo"
+            android:textSize="22dp"/>
+
+        <TextView
+            android:id="@+id/txtThreshold2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="27500"
+            android:textSize="24sp"
+            android:gravity="center"
+            android:layout_marginHorizontal="16dp"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/btnIncreaseFaceRecognitionThresholdArea"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:text="+"
+            android:backgroundTint="@color/orangeLogo"
+            android:textSize="22dp"/>
+    </LinearLayout>
+    <TextView
+        android:id="@+id/tvTimeWaitingLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ngưỡng thời gian đợi nhận diện"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/layoutFaceRecognitionThresholdArea"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="32dp"/>
+    <LinearLayout
+        android:id="@+id/layoutTimeWaiting"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toBottomOf="@id/tvTimeWaitingLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/btnDecreaseTimeWaiting"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:text="-"
+            android:backgroundTint="@color/orangeLogo"
+            android:textSize="22dp"/>
+
+        <TextView
+            android:id="@+id/txtTimeWaiting"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="1000"
+            android:textSize="24sp"
+            android:gravity="center"
+            android:layout_marginHorizontal="16dp"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/btnIncreaseTimeWaiting"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:text="+"
+            android:backgroundTint="@color/orangeLogo"
+            android:textSize="22dp"/>
+    </LinearLayout>
+    <!-- Save Button -->
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Lưu"
+        android:textSize="20sp"
+        android:backgroundTint="@color/orangeLogo"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@id/layoutTimeWaiting"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="40dp"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
