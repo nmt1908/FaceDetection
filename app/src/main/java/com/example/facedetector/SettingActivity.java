@@ -59,7 +59,7 @@ public class SettingActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         faceAreaDetectionThreshold = prefs.getInt("detect_threshold", 12500);
         faceRecognitionThresholdArea = prefs.getInt("recognize_threshold", 27500);
-        timeWaiting = prefs.getInt("time_waiting", 1000);
+        timeWaiting = prefs.getInt("time_waiting", 8000);
 
         // HIỂN THỊ GIÁ TRỊ ĐỌC ĐƯỢC LÊN UI
         tvFaceAreaDetectionThresholdValue.setText(String.valueOf(faceAreaDetectionThreshold));
