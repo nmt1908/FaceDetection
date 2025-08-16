@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <!-- App Title Bar -->
+
+    <!-- App Title Bar (nằm trên camera khi bình thường) -->
     <LinearLayout
         android:id="@+id/titleBar"
         android:layout_width="match_parent"
@@ -29,7 +30,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="Face Recognition"
-            android:textSize="60dp"
+            android:textSize="60sp"
             android:textColor="#000000"
             android:textStyle="bold" />
     </LinearLayout>
@@ -41,13 +42,12 @@
         android:layout_height="match_parent" />
 
     <!-- Face overlay -->
-
-    <!-- User Info Panel (overlay, bottom) -->
     <com.example.facedetector.FaceGraphicOverlay
         android:id="@+id/graphicOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- User Info Panel (overlay, bottom) -->
     <LinearLayout
         android:id="@+id/userInfoPanel"
         android:layout_width="match_parent"
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:text="Recognizing..."
                 android:textColor="#FFFFFF"
-                android:textSize="20dp"
+                android:textSize="20sp"
                 android:layout_marginTop="8dp" />
         </LinearLayout>
 
@@ -100,7 +100,6 @@
             android:layout_marginBottom="8dp"
             android:gravity="center" />
 
-
         <!-- Name Row -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -115,7 +114,7 @@
                 android:text="Name:"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
-                android:textSize="40dp"
+                android:textSize="40sp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1" />
 
@@ -126,7 +125,7 @@
                 android:text="Nguyễn Văn A"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
-                android:textSize="40dp"
+                android:textSize="40sp"
                 android:layout_marginStart="30dp" />
         </LinearLayout>
 
@@ -144,7 +143,7 @@
                 android:text="Code:"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
-                android:textSize="40dp"
+                android:textSize="40sp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1" />
 
@@ -155,7 +154,7 @@
                 android:text="123456"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
-                android:textSize="40dp" />
+                android:textSize="40sp" />
         </LinearLayout>
 
         <!-- Similarity Row -->
@@ -171,7 +170,7 @@
                 android:text="Similarity:"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
-                android:textSize="40dp"
+                android:textSize="40sp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1" />
 
@@ -182,9 +181,45 @@
                 android:text="98.75%"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
-                android:textSize="40dp" />
+                android:textSize="40sp" />
         </LinearLayout>
     </LinearLayout>
 
-</FrameLayout>
+    <!-- IDLE OVERLAY: che toàn bộ, kể cả titleBar -->
+    <RelativeLayout
+        android:id="@+id/idleOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:elevation="100dp"
+        android:clickable="true"
+        android:focusable="true">
 
+        <ImageView
+            android:id="@+id/idleBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/bg4" />
+
+        <ImageView
+            android:id="@+id/idleLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:src="@drawable/logo" />
+
+        <TextView
+            android:id="@+id/idleClock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/idleLogo"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"
+            android:gravity="center"
+            android:text="00:00"
+            android:textColor="@color/black"
+            android:textSize="100sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+</FrameLayout>
