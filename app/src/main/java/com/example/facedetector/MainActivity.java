@@ -765,7 +765,14 @@ public class MainActivity extends AppCompatActivity implements FaceAnalyzer.Face
     private static final int LOW_LIGHT_THRESHOLD = 50;
     private static final int LOW_LIGHT_FRAME_LIMIT = 30;
     private static final int HIGH_LIGHT_THRESHOLD = 90;
+    private static final long SUCCESS_COOLDOWN_MS = 4000; // sau khi nhận diện OK
+    private static final long FAILURE_COOLDOWN_MS = 2500; // sau khi fail
+    private long nextAllowedTs = 0L;
 
+    // Yêu cầu “mặt rời khung” trước khi cho phép nhận diện lại
+    private boolean requireFaceExit = false;
+    private static final String TAG_FR = "FR_FLOW";
+    private long attemptSeq = 0; // tăng dần mỗi lần chuẩn bị bắn API
     TextView alertTextView, labelName, nameTextView, labelCardId, cardIDTextView, labelSimilarity, similarityTextView, appTitle;
     ProgressBar loadingSpinner;
     private LinearLayout loadingContainer, userInfoPanel;
@@ -781,7 +788,17 @@ public class MainActivity extends AppCompatActivity implements FaceAnalyzer.Face
 
     // Executor riêng cho ImageAnalysis & các tác vụ nặng
     private ExecutorService analyzerExecutor;
+    private SoundPoolHelper sp;
 
+    private static final String LED_RED = "/sys/class/leds/led4/brightness";
+    private static final String LED_GREEN = "/sys/class/leds/led5/brightness";
+    private static final String LED_WHITE = "/sys/class/leds/camera_white/brightness";
+    private static final String[] LED_TRIGGERS = {
+            "/sys/class/leds/camera_white/trigger",
+            "/sys/class/leds/led4/trigger",
+            "/sys/class/leds/led5/trigger",
+            "/sys/class/leds/led7/trigger"  // nếu tồn tại
+    };
     private View idleOverlay;
     private TextView idleClock;
     private boolean isIdle = false;
@@ -831,7 +848,7 @@ public class MainActivity extends AppCompatActivity implements FaceAnalyzer.Face
         idleOverlay = findViewById(R.id.idleOverlay);
         idleOverlay.bringToFront();
         applyImmersiveMode();
-
+        sp = new SoundPoolHelper(getApplicationContext());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             idleOverlay.setElevation(100f);
         }
@@ -987,7 +1004,54 @@ public class MainActivity extends AppCompatActivity implements FaceAnalyzer.Face
             } catch (Exception ignore) {}
         });
     }
+    private void ledExec(String sh) {
+        analyzerExecutor.execute(() -> {
+            try {
+                Runtime.getRuntime().exec(new String[]{"sh","-c", sh});
+            } catch (Exception ignored) {}
+        });
+    }
 
+    private void ledDisableTriggers() {
+        // cần root trên nhiều máy: "su 0 sh -c ..."
+        analyzerExecutor.execute(() -> {
+            for (String t : LED_TRIGGERS) {
+                try {
+                    Runtime.getRuntime().exec(new String[]{"sh","-c",
+                            "[ -f "+t+" ] && echo none > "+t});
+                } catch (Exception ignored) {}
+            }
+        });
+    }
+
+    private void ledOffAll() {
+        ledExec("echo 0 > "+LED_WHITE+"; echo 0 > "+LED_RED+"; echo 0 > "+LED_GREEN);
+    }
+
+    // Bật xanh 2s rồi tắt
+    private void flashGreen2s() {
+        ledDisableTriggers();
+        analyzerExecutor.execute(() -> {
+            try {
+                // tùy máy: một số cần mở trắng để nhìn rõ ánh xanh
+                Runtime.getRuntime().exec(new String[]{"sh","-c",
+                        "echo 100 > "+LED_WHITE+"; echo 0 > "+LED_RED+"; echo 1 > "+LED_GREEN});
+            } catch (Exception ignored) {}
+        });
+        mainHandler.postDelayed(this::ledOffAll, 2000);
+    }
+
+    // Bật đỏ 2s rồi tắt
+    private void flashRed2s() {
+        ledDisableTriggers();
+        analyzerExecutor.execute(() -> {
+            try {
+                Runtime.getRuntime().exec(new String[]{"sh","-c",
+                        "echo 100 > "+LED_WHITE+"; echo 1 > "+LED_RED+"; echo 0 > "+LED_GREEN});
+            } catch (Exception ignored) {}
+        });
+        mainHandler.postDelayed(this::ledOffAll, 2000);
+    }
     private void exitIdle() {
         if (!isIdle) return;
         isIdle = false;
@@ -1181,8 +1245,10 @@ public class MainActivity extends AppCompatActivity implements FaceAnalyzer.Face
             User activeUser = new User(name, cardId, similarity);
 
             runOnUiThread(() -> {
-                alertTextView.setText("Facial recognition successful");
 
+                alertTextView.setText("Facial recognition successful");
+                sp.playSoundBeep(sp.soundSuccess);
+                flashGreen2s();   // ✅ xanh 2s
                 labelName.setVisibility(View.VISIBLE);
                 labelCardId.setVisibility(View.VISIBLE);
                 labelSimilarity.setVisibility(View.VISIBLE);
@@ -1199,6 +1265,7 @@ public class MainActivity extends AppCompatActivity implements FaceAnalyzer.Face
 
                 userInfoPanel.setVisibility(View.VISIBLE);
                 userInfoPanel.postDelayed(() -> userInfoPanel.setVisibility(View.GONE), 1500);
+                nextAllowedTs = System.currentTimeMillis() + SUCCESS_COOLDOWN_MS;
 
                 // Bật relay ngay, tắt sau 3s (không dùng sleep)
                 turnRelayOnThenOff();
@@ -1234,6 +1301,9 @@ public class MainActivity extends AppCompatActivity implements FaceAnalyzer.Face
         runOnUiThread(() -> {
             userInfoPanel.setVisibility(View.VISIBLE);
             alertTextView.setVisibility(View.VISIBLE);
+            sp.playSoundBeep(sp.soundFailed);
+            flashRed2s();     // ✅ đỏ 2s
+
             alertTextView.setText("Facial recognition failed");
 
             labelName.setVisibility(View.GONE);
@@ -1246,6 +1316,12 @@ public class MainActivity extends AppCompatActivity implements FaceAnalyzer.Face
             loadingContainer.setVisibility(View.GONE);
 
             alertTextView.postDelayed(() -> alertTextView.setText(""), 2000);
+            long now = System.currentTimeMillis();
+            if (now < nextAllowedTs) {
+                // đã có cooldown từ trước thì giữ
+            } else {
+                nextAllowedTs = now + FAILURE_COOLDOWN_MS;
+            }
         });
     }
 
@@ -1334,24 +1410,58 @@ public class MainActivity extends AppCompatActivity implements FaceAnalyzer.Face
     @Override
     public void onFaceLookingStraight() {
         runOnUiThread(() -> {
-            if (isTakingPhoto) return;
+            if (isTakingPhoto) {
+                Log.d(TAG_FR, "Skip: isTakingPhoto=true");
+                return;
+            }
+
+            long now = System.currentTimeMillis();
+
+            // 1) Chưa tới giờ cho phép
+            if (now < nextAllowedTs) {
+                long remain = nextAllowedTs - now;
+                Log.d(TAG_FR, "Blocked by cooldown. remain=" + remain + "ms, nextAllowedTs=" + nextAllowedTs);
+                return;
+            }
+
+            // 2) Chưa thấy mặt rời khung kể từ lần thử trước
+            if (requireFaceExit) {
+                Log.d(TAG_FR, "Blocked by requireFaceExit=true (must see face exit event)");
+                return;
+            }
 
             if (faceStraightStartTime == 0) {
-                faceStraightStartTime = System.currentTimeMillis();
+                faceStraightStartTime = now;
+                Log.d(TAG_FR, "Face straight started at " + faceStraightStartTime);
             } else {
-                long elapsed = System.currentTimeMillis() - faceStraightStartTime;
-                if (elapsed >= 500) {
+                long elapsed = now - faceStraightStartTime;
+                Log.d(TAG_FR, "Face straight elapsed=" + elapsed + "ms");
+                if (elapsed >= 500) { // ngưỡng của bạn
                     isTakingPhoto = true;
                     faceStraightStartTime = 0;
+
+                    // Đặt trạng thái ngay lúc BẮT ĐẦU thử
+                    requireFaceExit = true; // phải rời khung mới thử lại
+                    nextAllowedTs = now + FAILURE_COOLDOWN_MS; // ít nhất đợi 1 nhịp (nếu success sẽ tăng thêm)
+
+                    long attemptId = ++attemptSeq;
+                    Log.d(TAG_FR, "BEGIN attempt#" + attemptId +
+                            " set requireFaceExit=true, pre-cooldown=" + FAILURE_COOLDOWN_MS + "ms");
+
                     takePhoto();
                 }
             }
         });
     }
 
+
+
     @Override
     public void onFaceNotLookingStraight() {
-        runOnUiThread(() -> faceStraightStartTime = 0);
+        runOnUiThread(() -> {
+            faceStraightStartTime = 0;
+            requireFaceExit = false; // đã rời khung -> bỏ yêu cầu
+        });
     }
 
     private void takePhoto() {
@@ -1468,6 +1578,7 @@ public class MainActivity extends AppCompatActivity implements FaceAnalyzer.Face
             analyzerExecutor.shutdown();
         }
         clockHandler.removeCallbacks(clockTick);
+        if (sp != null) sp.release();
     }
 
     private static class SurfaceRotationCompat {
