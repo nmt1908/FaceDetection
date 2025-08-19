@@ -52,9 +52,6 @@ public class FaceAnalyzer implements ImageAnalysis.Analyzer {
         int recognizeThreshold = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
                 .getInt("recognize_threshold", 3000);
 
-        Log.e("detect_threshold", String.valueOf(detectThreshold));
-        Log.e("recognize_threshold", String.valueOf(recognizeThreshold));
-
         Image mediaImage = imageProxy.getImage();
 
         if (mediaImage == null) {
